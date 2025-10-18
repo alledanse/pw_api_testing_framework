@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect } from '../utils/custom-expect';
 import { test } from '../utils/fixtures';
 
 let authToken: string;
@@ -19,12 +19,12 @@ test.beforeAll('run before all', async ({ api }) => {
 
 test('Get articles', async ({ api }) => {
   const response = await api.path('/articles').params({ limit: 10, offset: 0 }).getRequest(200);
-  expect(response.articles.length).toBeLessThanOrEqual(10);
-  expect(response.articlesCount).toEqual(10);
+  expect(response.articles.length).shouldBeLessThanOrEqual(10);
+  expect(response.articlesCount).shouldEqual(10);
 });
 test('Get test tags', async ({ api }) => {
   const response = await api.path('/tags').getRequest(200);
-  expect(response.tags[0]).toEqual('Test');
+  expect(response.tags[0]).shouldEqual('Test');
   expect(response.tags.length).toBeLessThanOrEqual(10);
 });
 test('Create and delete article', async ({ api }) => {
@@ -41,7 +41,7 @@ test('Create and delete article', async ({ api }) => {
     })
     .postRequest(201);
 
-  expect(createArticleResponse.article.title).toEqual('Test TWO TEST');
+  expect(createArticleResponse.article.title).shouldEqual('Test TWO TEST');
   const slugId = createArticleResponse.article.slug;
 
   const articleResponse = await api
@@ -49,7 +49,7 @@ test('Create and delete article', async ({ api }) => {
     .headers({ Authorization: authToken })
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articleResponse.articles[0].title).toEqual('Test TWO TEST');
+  expect(articleResponse.articles[0].title).shouldEqual('Test TWO TEST');
 
   await api.path(`/articles/${slugId}`).headers({ Authorization: authToken }).deleteRequest(204);
 
@@ -58,7 +58,7 @@ test('Create and delete article', async ({ api }) => {
     .headers({ Authorization: authToken })
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articleResponseTwo.articles[0].title).not.toEqual('Test TWO TEST');
+  expect(articleResponseTwo.articles[0].title).not.shouldEqual('Test TWO TEST');
 });
 
 test('Create, update and delete article', async ({ api }) => {
@@ -75,7 +75,7 @@ test('Create, update and delete article', async ({ api }) => {
     })
     .postRequest(201);
 
-  expect(createArticleResponse.article.title).toEqual('Test TWO TEST');
+  expect(createArticleResponse.article.title).shouldEqual('Test TWO TEST');
   const slugId = createArticleResponse.article.slug;
 
   const updateArticleResponse = await api
@@ -91,7 +91,7 @@ test('Create, update and delete article', async ({ api }) => {
     })
     .putRequest(200);
 
-  expect(updateArticleResponse.article.title).toEqual('Test new article modified');
+  expect(updateArticleResponse.article.title).shouldEqual('Test new article modified');
   const newSlugId = updateArticleResponse.article.slug;
 
   const articleResponse = await api
@@ -99,7 +99,7 @@ test('Create, update and delete article', async ({ api }) => {
     .headers({ Authorization: authToken })
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articleResponse.articles[0].title).toEqual('Test new article modified');
+  expect(articleResponse.articles[0].title).shouldEqual('Test new article modified');
 
   await api.path(`/articles/${newSlugId}`).headers({ Authorization: authToken }).deleteRequest(204);
 
@@ -108,5 +108,5 @@ test('Create, update and delete article', async ({ api }) => {
     .headers({ Authorization: authToken })
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articleResponseTwo.articles[0].title).not.toEqual('Test new article modified');
+  expect(articleResponseTwo.articles[0].title).not.shouldEqual('Test new article modified');
 });
