@@ -4,7 +4,7 @@ import { APILogger } from './logger';
 export class RequestHandler {
   private request: APIRequestContext;
   private logger: APILogger;
-  private baseUrl: string;
+  private baseUrl: string | undefined;
   private defaultBaseUrl: string;
   private apiPath: string = '';
   private queryParams: object = {};
@@ -48,6 +48,7 @@ export class RequestHandler {
     const response = await this.request.get(url, {
       headers: this.apiHeaders,
     });
+    this.cleanUpFields();
     const actualStatus = response.status();
     const responseJSON = await response.json();
     this.logger.logResponse(actualStatus, responseJSON);
@@ -76,6 +77,7 @@ export class RequestHandler {
       headers: this.apiHeaders,
       data: this.apiBody,
     });
+    this.cleanUpFields();
     const actualStatus = response.status();
     const responseJSON = await response.json();
     this.logger.logResponse(actualStatus, responseJSON);
@@ -89,6 +91,7 @@ export class RequestHandler {
     const response = await this.request.delete(url, {
       headers: this.apiHeaders,
     });
+    this.cleanUpFields();
     const actualStatus = response.status();
     this.logger.logResponse(actualStatus);
     this.statusCodeValidator(actualStatus, statusCode, this.deleteRequest);
@@ -115,5 +118,13 @@ export class RequestHandler {
       Error.captureStackTrace(error, callingMethod);
       throw error;
     }
+  }
+
+  private cleanUpFields() {
+    (this.apiBody = {}),
+      (this.apiHeaders = {}),
+      (this.baseUrl = undefined),
+      (this.apiPath = ''),
+      (this.queryParams = {});
   }
 }
