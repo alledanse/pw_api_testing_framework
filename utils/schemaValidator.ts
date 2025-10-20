@@ -1,12 +1,25 @@
 import fs from 'fs/promises';
 import path from 'path';
 import Ajv from 'ajv';
+import { createSchema } from 'genson-js';
+import addFormats from 'ajv-formats';
 
 const SCHEMA_BASE_PATH = './response-schemas';
 const ajv = new Ajv({ allErrors: true });
+addFormats(ajv);
 
-export async function validateSchema(dirName: string, fileName: string, responseBody: object) {
+export async function validateSchema(
+  dirName: string,
+  fileName: string,
+  responseBody: object,
+  createSchemaFlag: boolean = false,
+) {
   const schemaPath = path.join(SCHEMA_BASE_PATH, dirName, `${fileName}_schema.json`);
+
+  if (createSchemaFlag) {
+    await generateNewSchema(responseBody, schemaPath);
+  }
+
   const schema = await loadSchema(schemaPath);
   const validate = ajv.compile(schema);
   const valid = validate(responseBody);
@@ -27,5 +40,16 @@ async function loadSchema(schemaPath: string) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to read schema file: ${message}`);
+  }
+}
+
+async function generateNewSchema(responseBody: object, schemaPath: string) {
+  try {
+    const generatedSchema = createSchema(responseBody);
+    await fs.mkdir(path.dirname(schemaPath), { recursive: true });
+    await fs.writeFile(schemaPath, JSON.stringify(generatedSchema, null, 4));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to create schema file: ${message}`);
   }
 }

@@ -8,11 +8,13 @@ test('Get articles', async ({ api }) => {
     .params({ limit: 10, offset: 0 })
     .clearAuth()
     .getRequest(200);
+  await expect(response).shouldMatchSchema('articles', 'GET_articles');
   expect(response.articles.length).shouldBeLessThanOrEqual(10);
   expect(response.articlesCount).shouldEqual(10);
 });
 test('Get test tags', async ({ api }) => {
   const response = await api.path('/tags').getRequest(200);
+  await expect(response).shouldMatchSchema('tags', 'GET_tags');
   await validateSchema('tags', 'GET_tags', response);
   expect(response.tags[0]).shouldEqual('Test');
   expect(response.tags.length).toBeLessThanOrEqual(10);
@@ -29,6 +31,7 @@ test('Create and delete article', async ({ api }) => {
       },
     })
     .postRequest(201);
+  await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_articles');
 
   expect(createArticleResponse.article.title).shouldEqual('Test TWO TEST');
   const slugId = createArticleResponse.article.slug;
