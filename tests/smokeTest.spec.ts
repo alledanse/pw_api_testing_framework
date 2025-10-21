@@ -1,6 +1,7 @@
 import { expect } from '../utils/custom-expect';
 import { test } from '../utils/fixtures';
 import { validateSchema } from '../utils/schemaValidator';
+import articleRequestPayload from '../request-objects/POST-article.json';
 
 test('Get articles', async ({ api }) => {
   const response = await api
@@ -20,17 +21,8 @@ test('Get test tags', async ({ api }) => {
   expect(response.tags.length).toBeLessThanOrEqual(10);
 });
 test('Create and delete article', async ({ api }) => {
-  const createArticleResponse = await api
-    .path('/articles')
-    .body({
-      article: {
-        title: 'Test TWO TEST',
-        description: 'Test description',
-        body: 'Test body',
-        tagList: [],
-      },
-    })
-    .postRequest(201);
+  const articleRequest = JSON.parse(JSON.stringify(articleRequestPayload));
+  const createArticleResponse = await api.path('/articles').body(articleRequest).postRequest(201);
   await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_articles');
 
   expect(createArticleResponse.article.title).shouldEqual('Test TWO TEST');
@@ -68,16 +60,10 @@ test('Create, update and delete article', async ({ api }) => {
   expect(createArticleResponse.article.title).shouldEqual('Test TWO TEST');
   const slugId = createArticleResponse.article.slug;
 
+  articleRequestPayload.article.title = 'Test new article modified';
   const updateArticleResponse = await api
     .path(`/articles/${slugId}`)
-    .body({
-      article: {
-        title: 'Test new article modified',
-        description: 'Test description',
-        body: 'Test body',
-        tagList: [],
-      },
-    })
+    .body(articleRequestPayload)
     .putRequest(200);
 
   expect(updateArticleResponse.article.title).shouldEqual('Test new article modified');
